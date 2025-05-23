@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Progress Bar Maker</title>
+  <style>
+    body {
+      background-color: #121212;
+      color: #ffffff;
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+    button {
+      padding: 10px;
+      margin: 5px;
+      border: none;
+      background-color: #1e88e5;
+      color: white;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+    button:hover {
+      background-color: #1565c0;
+    }
+    .progress-container {
+      background-color: #1e1e1e;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+    }
+    .progress-info {
+      flex: 1;
+      margin-right: 15px;
+    }
+    .bar-wrapper {
+      background: #333;
+      border-radius: 10px;
+      overflow: hidden;
+      height: 25px;
+      margin: 10px 0;
+    }
+    .progress-bar {
+      height: 100%;
+      color: white;
+      text-align: center;
+      line-height: 25px;
+      transition: width 0.3s ease;
+    }
+    .note-box {
+      width: 200px;
+      height: 100px;
+      background-color: #1e1e1e;
+      color: white;
+      border: 1px solid #555;
+      padding: 8px;
+      border-radius: 5px;
+      resize: vertical;
+    }
+    input[type='text'], input[type='number'] {
+      padding: 6px;
+      border-radius: 4px;
+      border: 1px solid #555;
+      background-color: #1e1e1e;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Progress Bar Maker</h1>
+  <button onclick="addProgressBar()">Add Progress Bar</button>
+  <div id="container"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <script>
+    let barId = 0;
+
+    function addProgressBar() {
+      const name = prompt('Enter the name of the progress bar:', 'My Progress');
+      const goal = parseInt(prompt('Enter the goal (max value):'), 10);
+      const current = parseInt(prompt('Enter the starting value:'), 10);
+      const color = prompt('Enter the color (e.g., green, red, #ff0000):', 'green');
+      if (isNaN(goal) || isNaN(current)) return alert('Invalid input.');
+
+      const container = document.getElementById('container');
+
+      const wrapper = document.createElement('div');
+      wrapper.className = 'progress-container';
+      wrapper.id = 'bar-' + barId;
+
+      const progressInfo = document.createElement('div');
+      progressInfo.className = 'progress-info';
+
+      const nameInput = document.createElement('input');
+      nameInput.type = 'text';
+      nameInput.value = name;
+      nameInput.style.width = '200px';
+
+      const goalInput = document.createElement('input');
+      goalInput.type = 'number';
+      goalInput.value = goal;
+      goalInput.style.width = '80px';
+
+      const currentValue = { val: current };
+
+      const barWrapper = document.createElement('div');
+      barWrapper.className = 'bar-wrapper';
+
+      const bar = document.createElement('div');
+      bar.className = 'progress-bar';
+      bar.style.backgroundColor = color;
+      updateBar(bar, current, goal);
+
+      barWrapper.appendChild(bar);
+
+      const controls = document.createElement('div');
+      const plus = document.createElement('button');
+      plus.textContent = '+';
+      plus.onclick = () => {
+        const inc = parseInt(prompt('Increment by:'), 10);
+        if (!isNaN(inc)) {
+          currentValue.val += inc;
+          updateBar(bar, currentValue.val, parseInt(goalInput.value));
+          checkGoal(currentValue.val, parseInt(goalInput.value));
+        }
+      };
+
+      const minus = document.createElement('button');
+      minus.textContent = '-';
+      minus.onclick = () => {
+        const dec = parseInt(prompt('Decrement by:'), 10);
+        if (!isNaN(dec)) {
+          currentValue.val -= dec;
+          updateBar(bar, currentValue.val, parseInt(goalInput.value));
+        }
+      };
+
+      const del = document.createElement('button');
+      del.textContent = '🗑️';
+      del.onclick = () => {
+        container.removeChild(wrapper);
+      };
+
+      controls.appendChild(plus);
+      controls.appendChild(minus);
+      controls.appendChild(del);
+
+      const note = document.createElement('textarea');
+      note.className = 'note-box';
+      note.placeholder = 'Notes...';
+      note.oninput = () => {
+        localStorage.setItem(`note-${wrapper.id}`, note.value);
+      };
+      note.value = localStorage.getItem(`note-${wrapper.id}`) || '';
+
+      progressInfo.appendChild(nameInput);
+      progressInfo.appendChild(document.createTextNode(' | Goal: '));
+      progressInfo.appendChild(goalInput);
+      progressInfo.appendChild(barWrapper);
+      progressInfo.appendChild(controls);
+
+      wrapper.appendChild(progressInfo);
+      wrapper.appendChild(note);
+      container.appendChild(wrapper);
+
+      barId++;
+    }
+
+    function updateBar(bar, current, goal) {
+      const percentage = Math.min(100, Math.max(0, (current / goal) * 100));
+      bar.style.width = percentage + '%';
+      bar.textContent = `${current} / ${goal}`;
+    }
+
+    function checkGoal(current, goal) {
+      if (current >= goal) {
+        confetti({
+          particleCount: 100,
+          spread: 70,
+          origin: { y: 0.6 }
+        });
+      }
+    }
+  </script>
+</body>
+</html>
