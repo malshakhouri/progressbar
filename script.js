@@ -10,11 +10,14 @@ function saveAllBars() {
     const current = parseInt(bar.textContent.split('/')[0].trim(), 10);
     const color = bar.style.backgroundColor;
     const note = container.querySelector('textarea').value;
+    const imgEl = container.querySelector('img');
+    const img = imgEl ? imgEl.src : '';
 
-    bars.push({ id, name, goal, current, color, note });
+    bars.push({ id, name, goal, current, color, note, img });
   });
   localStorage.setItem('progressBars', JSON.stringify(bars));
 }
+
 
 function loadBars() {
   const saved = localStorage.getItem('progressBars');
@@ -22,12 +25,13 @@ function loadBars() {
   try {
     const bars = JSON.parse(saved);
     bars.forEach(bar => {
-      addProgressBar(bar.name, bar.goal, bar.current, bar.color, bar.note, parseInt(bar.id));
+      addProgressBar(bar.name, bar.goal, bar.current, bar.color, bar.note, parseInt(bar.id), bar.img || '');
     });
   } catch (e) {
     console.error('Error parsing saved progress bars', e);
   }
 }
+
 
 function promptAddBar() {
   const name = prompt('Enter the name of the progress bar:', 'My Progress');
@@ -40,7 +44,8 @@ function promptAddBar() {
   saveAllBars();
 }
 
-function addProgressBar(name, goal, current, color, noteValue = '', id = barId++) {
+function addProgressBar(name, goal, current, color, noteValue = '', id = barId++, imgData = '') {
+
   const container = document.getElementById('container');
   const wrapper = document.createElement('div');
   wrapper.className = 'progress-container';
@@ -125,6 +130,31 @@ function addProgressBar(name, goal, current, color, noteValue = '', id = barId++
 
   wrapper.appendChild(progressInfo);
   wrapper.appendChild(note);
+
+    // Image input
+  const img = document.createElement('img');
+  img.className = 'bar-image';
+  if (imgData) img.src = imgData;
+
+  const imgInput = document.createElement('input');
+  imgInput.type = 'file';
+  imgInput.accept = 'image/*';
+  imgInput.onchange = () => {
+    const file = imgInput.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        img.src = e.target.result;
+        saveAllBars();
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  wrapper.appendChild(imgInput);
+  wrapper.appendChild(img);
+
+
   container.appendChild(wrapper);
 }
 
@@ -144,7 +174,11 @@ function checkGoal(current, goal) {
   }
 }
 
-window.onload = loadBars;
+window.onload = () => {
+  setLatestUpdate('1.2', 'Image Support & Backup Import/Export');
+  loadBars();
+};
+
 
 function downloadBackup() {
   const data = {
@@ -184,3 +218,9 @@ document.getElementById('importBackupInput').addEventListener('change', function
   };
   reader.readAsText(file);
 });
+
+function setLatestUpdate(version, title) {
+  const updateDiv = document.getElementById('latest-update');
+  updateDiv.textContent = `Latest Update: v${version} — ${title}`;
+}
+
