@@ -145,3 +145,42 @@ function checkGoal(current, goal) {
 }
 
 window.onload = loadBars;
+
+function downloadBackup() {
+  const data = {
+    barIdCounter: barId,
+    progressBars: JSON.parse(localStorage.getItem('progressBars') || '[]')
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'progress-bars-backup.json';
+  a.click();
+
+  URL.revokeObjectURL(url);
+}
+
+document.getElementById('importBackupInput').addEventListener('change', function (event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function (e) {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (!Array.isArray(data.progressBars)) throw new Error("Invalid backup file");
+
+      localStorage.setItem('progressBars', JSON.stringify(data.progressBars));
+      localStorage.setItem('barIdCounter', data.barIdCounter || 0);
+      barId = parseInt(localStorage.getItem('barIdCounter')) || 0;
+
+      document.getElementById('container').innerHTML = '';
+      loadBars();
+    } catch (err) {
+      alert('Failed to import backup: ' + err.message);
+    }
+  };
+  reader.readAsText(file);
+});
