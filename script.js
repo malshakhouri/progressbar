@@ -69,6 +69,16 @@ function addProgressBar(name, goal, current, color, noteValue = '', id = barId++
     saveAllBars();
   };
 
+  const currentInput = document.createElement('input');
+  currentInput.type = 'number';
+  currentInput.value = current;
+  currentInput.style.width = '80px';
+  currentInput.oninput = () => {
+    currentValue.val = parseInt(currentInput.value) || 0;
+    updateBar(bar, currentValue.val, parseInt(goalInput.value));
+    saveAllBars();
+  };
+
   const currentValue = { val: current };
 
   const barWrapper = document.createElement('div');
@@ -85,25 +95,22 @@ function addProgressBar(name, goal, current, color, noteValue = '', id = barId++
   const plus = document.createElement('button');
   plus.textContent = '+';
   plus.onclick = () => {
-    const inc = parseInt(prompt('Increment by:'), 10);
-    if (!isNaN(inc)) {
-      currentValue.val += inc;
-      updateBar(bar, currentValue.val, parseInt(goalInput.value));
-      checkGoal(currentValue.val, parseInt(goalInput.value));
-      saveAllBars();
-    }
+    currentValue.val += 1;
+    currentInput.value = currentValue.val;
+    updateBar(bar, currentValue.val, parseInt(goalInput.value));
+    checkGoal(currentValue.val, parseInt(goalInput.value));
+    saveAllBars();
   };
 
   const minus = document.createElement('button');
   minus.textContent = '-';
   minus.onclick = () => {
-    const dec = parseInt(prompt('Decrement by:'), 10);
-    if (!isNaN(dec)) {
-      currentValue.val -= dec;
-      updateBar(bar, currentValue.val, parseInt(goalInput.value));
-      saveAllBars();
-    }
+    currentValue.val -= 1;
+    currentInput.value = currentValue.val;
+    updateBar(bar, currentValue.val, parseInt(goalInput.value));
+    saveAllBars();
   };
+
 
   const del = document.createElement('button');
   del.textContent = '🗑️';
@@ -125,13 +132,16 @@ function addProgressBar(name, goal, current, color, noteValue = '', id = barId++
   progressInfo.appendChild(nameInput);
   progressInfo.appendChild(document.createTextNode(' | Goal: '));
   progressInfo.appendChild(goalInput);
+  progressInfo.appendChild(document.createTextNode(' | Progress: '));
+  progressInfo.appendChild(currentInput);
+
   progressInfo.appendChild(barWrapper);
   progressInfo.appendChild(controls);
 
   wrapper.appendChild(progressInfo);
   wrapper.appendChild(note);
 
-    // Image input
+  // Image input
   const img = document.createElement('img');
   img.className = 'bar-image';
   if (imgData) img.src = imgData;
