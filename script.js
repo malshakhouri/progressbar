@@ -185,7 +185,7 @@ function checkGoal(current, goal) {
 }
 
 window.onload = () => {
-  setLatestUpdate('1.2', 'Image Support & Backup Import/Export');
+  setLatestUpdate('1.4', 'progress rework');
   loadBars();
 };
 
